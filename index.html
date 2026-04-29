@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stream-Tropa Central</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-2: #0c1729;
+      --panel: rgba(13, 23, 40, 0.82);
+      --panel-strong: rgba(18, 31, 53, 0.96);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #edf4ff;
+      --muted: #9fb2cf;
+      --accent: #22c55e;
+      --accent-2: #38bdf8;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: Inter, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.20), transparent 25%),
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.16), transparent 20%),
+        linear-gradient(180deg, #05101d 0%, #07111f 45%, #050b14 100%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 72px 72px;
+      opacity: 0.22;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.6), transparent 92%);
+    }
+
+    .shell {
+      position: relative;
+      display: grid;
+      grid-template-columns: 310px minmax(0, 1fr);
+      height: 100vh;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .sidebar,
+    .workspace,
+    .config {
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, rgba(12, 22, 38, 0.95), rgba(8, 15, 28, 0.86));
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .brand {
+      padding: 22px 22px 16px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent);
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9fe9ff;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+    }
+
+    .brand h1 {
+      margin: 14px 0 8px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 34px;
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      padding: 12px 10px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1;
+      margin-bottom: 5px;
+      font-family: "Space Grotesk", sans-serif;
+    }
+
+    .stat span {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .search {
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .search input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(8, 16, 29, 0.9);
+      color: var(--text);
+      padding: 14px 14px;
+      border-radius: 16px;
+      outline: none;
+      font: inherit;
+    }
+
+    .search input:focus {
+      border-color: rgba(56, 189, 248, 0.55);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
+    }
+
+    .nav {
+      padding: 16px;
+      overflow: auto;
+      min-height: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav button {
+      width: 100%;
+      border: 1px solid transparent;
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 14px 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .nav button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255,255,255,0.11);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .nav button.active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(34, 197, 94, 0.14));
+      border-color: rgba(56, 189, 248, 0.28);
+    }
+
+    .nav .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+    }
+
+    .nav .title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .nav .count {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .nav .desc {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .sidebar-foot {
+      margin-top: auto;
+      border-top: 1px solid var(--line);
+      padding: 16px 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .sidebar-foot a,
+    .sidebar-foot button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 16px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .workspace {
+      background: linear-gradient(180deg, rgba(9, 17, 31, 0.86), rgba(8, 13, 25, 0.92));
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .hero {
+      padding: 22px 22px 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero h2 {
+      margin: 0 0 10px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 30px;
+      letter-spacing: -0.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 68ch;
+    }
+
+    .hero-actions {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .hero-actions .primary,
+    .hero-actions .secondary {
+      border: 0;
+      border-radius: 18px;
+      padding: 14px 16px;
+      font: inherit;
+      cursor: pointer;
+      color: #03111b;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .hero-actions .primary {
+      background: linear-gradient(135deg, #9ef3ff 0%, #7dd3fc 35%, #86efac 100%);
+    }
+
+    .hero-actions .secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .chips {
+      padding: 0 22px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chip {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .chip.active {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 390px) minmax(0, 1fr);
+      gap: 18px;
+      padding: 18px 22px 22px;
+      min-height: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.03);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-family: "Space Grotesk", sans-serif;
+      letter-spacing: -0.03em;
+      font-size: 18px;
+    }
+
+    .panel-head .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .docs-list,
+    .cards {
+      padding: 16px;
+      overflow: auto;
+      min-height: 0;
+      display: grid;
+      gap: 12px;
+    }
+
+    .card {
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(8, 16, 29, 0.82);
+      padding: 15px;
+    }
+
+    .card .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 10px;
+    }
+
+    .card h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 12.5px;
+    }
+
+    .card .meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 11px;
+      font-size: 11px;
+      color: #b9dbff;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.14);
+    }
+
+    .card .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .card .actions button,
+    .card .actions a {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      text-decoration: none;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .card.selected {
+      border-color: rgba(56, 189, 248, 0.32);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.12) inset;
+    }
+
+    .viewer {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-height: 0;
+    }
+
+    .viewer-head {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .viewer-head .left {
+      min-width: 0;
+    }
+
+    .viewer-head h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-family: "Space Grotesk", sans-serif;
+      letter-spacing: -0.03em;
+    }
+
+    .viewer-head .path {
+      color: var(--muted);
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .viewer-head .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .viewer-head button,
+    .viewer-head a {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .frame-wrap {
+      position: relative;
+      min-height: 0;
+      background: #02060c;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #02060c;
+    }
+
+    .overlay-note {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      pointer-events: none;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 11px;
+      color: #d8e8ff;
+    }
+
+    .overlay-note span {
+      background: rgba(3, 9, 18, 0.68);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 8px 10px;
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+    }
+
+    .config {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: min(510px, calc(100vw - 36px));
+      background: linear-gradient(180deg, rgba(8, 16, 29, 0.98), rgba(10, 18, 31, 0.92));
+      transform: translateY(calc(100% + 18px));
+      transition: transform 0.28s ease;
+      z-index: 20;
+    }
+
+    .config.open {
+      transform: translateY(0);
+    }
+
+    .config .panel-head button {
+      border: 0;
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .config-grid {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .config-item {
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .config-item label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 7px;
+    }
+
+    .config-item code {
+      display: block;
+      font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #dff5ff;
+      word-break: break-all;
+    }
+
+    .config-item .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .config-item button {
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 9px 11px;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .empty {
+      border: 1px dashed rgba(255,255,255,0.14);
+      border-radius: 18px;
+      padding: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .mobile-toggle {
+      display: none;
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 30;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(9, 17, 31, 0.86);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 11px 13px;
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+    }
+
+    @media (max-width: 1180px) {
+      body { overflow: auto; }
+      .shell {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        min-height: auto;
+      }
+
+      .hero,
+      .main {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace {
+        min-height: 90vh;
+      }
+
+      .viewer {
+        min-height: 66vh;
+      }
+    }
+
+    @media (max-width: 880px) {
+      .shell { padding: 0; gap: 0; }
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(92vw, 360px);
+        z-index: 40;
+        transform: translateX(-105%);
+        transition: transform 0.25s ease;
+      }
+
+      body.nav-open .sidebar { transform: translateX(0); }
+      .mobile-toggle { display: inline-flex; }
+      .workspace {
+        border-radius: 0;
+        min-height: 100vh;
+      }
+      .hero { padding-top: 62px; }
+      .stats { grid-template-columns: 1fr 1fr 1fr; }
+      .main { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <button class="mobile-toggle" id="mobileToggle">Menú</button>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">Portal central integrado</div>
+        <h1>Stream-Tropa</h1>
+        <p>Una sola web para abrir, supervisar y documentar todas tus herramientas de streaming.</p>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><strong id="statApps">0</strong><span>Apps</span></div>
+        <div class="stat"><strong id="statGroups">0</strong><span>Secciones</span></div>
+        <div class="stat"><strong id="statDocs">0</strong><span>Docs</span></div>
+      </div>
+
+      <div class="search">
+        <input id="searchInput" type="search" placeholder="Buscar app, sección o archivo...">
+      </div>
+
+      <div class="nav" id="categoryNav"></div>
+
+      <div class="sidebar-foot">
+        <button id="openConfigBtn">Configuración compartida</button>
+        <a href="INDICE.md" target="_blank" rel="noreferrer">Abrir documentación</a>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <section class="hero">
+        <div>
+          <h2>Centro de control real, no una suma de links</h2>
+          <p>
+            Esta página agrupa todas las herramientas de Stream-Tropa en una sola interfaz. Puedes navegar por categorías,
+            filtrar apps, abrir cada módulo en el visor integrado y copiar los links de uso rápido sin salir del portal.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button class="primary" id="launchSelectedBtn">Abrir selección</button>
+          <button class="secondary" id="copySelectedBtn">Copiar URL activa</button>
+        </div>
+      </section>
+
+      <section class="chips" id="sectionChips"></section>
+
+      <section class="main">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Secciones y herramientas</h3>
+              <p class="sub">Selecciona una categoría y luego carga el módulo que quieras usar.</p>
+            </div>
+          </div>
+          <div class="cards" id="cardsList"></div>
+        </div>
+
+        <div class="panel viewer">
+          <div class="viewer-head">
+            <div class="left">
+              <h3 id="viewerTitle">Selecciona una herramienta</h3>
+              <div class="path" id="viewerPath">El visor integrado cargará aquí la web elegida.</div>
+            </div>
+            <div class="buttons">
+              <button id="reloadBtn">Recargar</button>
+              <a id="openNewTabBtn" href="#" target="_blank" rel="noreferrer">Abrir pestaña</a>
+            </div>
+          </div>
+          <div class="frame-wrap">
+            <iframe id="viewerFrame" title="Stream-Tropa Central" allow="camera *; microphone *; fullscreen *; clipboard-read *; clipboard-write *; display-capture *" allowfullscreen></iframe>
+            <div class="overlay-note">
+              <span id="viewerHintLeft">Las apps se cargan dentro de la misma web.</span>
+              <span id="viewerHintRight">Si un módulo requiere cámara o micrófono, el navegador pedirá permiso aquí mismo.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <aside class="config" id="configPanel">
+    <div class="panel-head">
+      <div>
+        <h3>Configuración compartida</h3>
+        <p class="sub">Valores comunes para copiar y reutilizar en los módulos.</p>
+      </div>
+      <button id="closeConfigBtn">Cerrar</button>
+    </div>
+    <div class="config-grid">
+      <div class="config-item">
+        <label>MQTT broker actual</label>
+        <code>wss://broker.emqx.io:8084/mqtt</code>
+        <div class="actions"><button data-copy="wss://broker.emqx.io:8084/mqtt">Copiar</button></div>
+      </div>
+      <div class="config-item">
+        <label>PeerJS STUN base</label>
+        <code>stun:stun.l.google.com:19302</code>
+        <div class="actions"><button data-copy="stun:stun.l.google.com:19302">Copiar</button></div>
+      </div>
+      <div class="config-item">
+        <label>TURN actual en eventos</label>
+        <code>turn:140.82.25.249:3478 | usuario: reportero | clave: mundial2026</code>
+        <div class="actions"><button data-copy="turn:140.82.25.249:3478">Copiar host</button></div>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    const categories = [
+      { id: 'all', name: 'Todo', count: 32, description: 'Ver la colección completa en una sola vista.' },
+      { id: 'video', name: 'Video conferencia', count: 5, description: 'Director, guest, OBS y retorno.' },
+      { id: 'ptt', name: 'PTT', count: 3, description: 'Comunicación tipo walkie-talkie.' },
+      { id: 'split', name: 'Spliteo y gráficos', count: 6, description: '4 cámaras, QR, cronómetro y noticias.' },
+      { id: 'ipad', name: 'Captura iPad', count: 4, description: 'Pantalla iPad hacia OBS.' },
+      { id: 'events', name: 'Eventos', count: 2, description: 'PPT LAN y conexión híbrida.' },
+      { id: 'tools', name: 'Herramientas', count: 2, description: 'Utilidades de apoyo y retorno.' },
+      { id: 'docs', name: 'Documentación', count: 8, description: 'Guías rápidas y mapas de uso.' },
+    ];
+
+    const apps = [
+      { id: 'hub-video', name: 'StreamVideo V2.0', file: 'hub-video.html', category: 'video', section: 'Conferencia principal', description: 'Vista central para videoconferencia multiusuario con MQTT y PeerJS.', tag: 'Principal' },
+      { id: 'baradero', name: 'Baradero StreamCall', file: 'baradero.html', category: 'video', section: 'Director + guest', description: 'Modo director, OBS y tally con retorno al invitado.', tag: 'Dirección' },
+      { id: 'call-index', name: 'Call Pro', file: 'call/index.html', category: 'video', section: 'Estudio', description: 'Panel profesional para emisión y control.', tag: 'Studio' },
+      { id: 'mau', name: 'MAU StreamCall', file: 'mau.html', category: 'video', section: 'Comunicación', description: 'Interfaz de transmisión con chat y presencia.', tag: 'Comms' },
+      { id: 'tves', name: 'TVES StreamCall', file: 'tves.html', category: 'video', section: 'Producción', description: 'Dirección con modos OBS, guest y clean view.', tag: 'TV' },
+      { id: 'test', name: 'StreamTalk V9.0', file: 'test.html', category: 'ptt', section: 'Director', description: 'Botonera PTT para crew de producción.', tag: 'PTT' },
+      { id: 'talktotalk', name: 'TalkToTalk', file: 'talktotalk.html', category: 'ptt', section: 'Full duplex', description: 'Comunicación bidireccional con control de roles.', tag: 'Full' },
+      { id: 'talkok', name: 'TalkOK', file: 'talkok.html', category: 'ptt', section: 'Listen only', description: 'Receptor solo escucha para el equipo.', tag: 'RX' },
+      { id: 'atem', name: 'StreamSplitter V25', file: 'atem.html', category: 'split', section: 'Matriz', description: 'Grilla 2x2 para video y modo limpio para OBS.', tag: 'Grid' },
+      { id: 'strp-index', name: 'Streamcall Power', file: 'strp/index.html', category: 'split', section: 'Base', description: 'Sistema flexible para varias fuentes y modos.', tag: '4-way' },
+      { id: 'strp-4g', name: 'Streamcall Power 4G', file: 'strp/4g.html', category: 'split', section: 'Optimizado', description: 'Versión ligera para conexiones más inestables.', tag: '4G' },
+      { id: 'strp-4g1', name: 'Streamcall Power 4G1', file: 'strp/4g1.html', category: 'split', section: 'Single user', description: 'Variante para un usuario sobre red móvil.', tag: 'Solo' },
+      { id: 'strp-4ghn', name: 'Streamcall Power HN', file: 'strp/4ghn.html', category: 'split', section: 'TURN', description: 'Versión con fallback de red para Honduras.', tag: 'TURN' },
+      { id: 'strp-4ghn1', name: 'Streamcall Power HN1', file: 'strp/4ghn1.html', category: 'split', section: 'Single user TURN', description: 'Variante individual con fallback de red.', tag: 'HN' },
+      { id: 'strp-hn', name: 'Streamcall Power HN Clean', file: 'strp/hn.html', category: 'split', section: 'Clean OBS', description: 'Versión minimalista preparada para captura limpia.', tag: 'Clean' },
+      { id: 'stream-command', name: 'StreamCommand', file: '51933847353.html', category: 'split', section: 'Overlays', description: 'QR, timer, semáforo y cards para transmisión.', tag: 'Overlay' },
+      { id: 'thn', name: 'Zapping Master', file: 'thn/index.html', category: 'split', section: 'Noticias', description: 'Gráficos dinámicos y zapping automatizado.', tag: 'News' },
+      { id: 'thn2', name: 'Zapping Master 2', file: 'thn/index2.html', category: 'split', section: 'Noticias+', description: 'Versión alternativa del sistema de noticias.', tag: 'Alt' },
+      { id: 'tablet-ipad', name: 'iPad Transmisor', file: 'tablet/ipad.html', category: 'ipad', section: 'Transmisor', description: 'Captura pantalla y la envía al receptor.', tag: 'iPad' },
+      { id: 'tablet-obs', name: 'OBS Receptor', file: 'tablet/obs.html', category: 'ipad', section: 'Receptor', description: 'Recibe el stream y lo deja limpio para OBS.', tag: 'OBS' },
+      { id: 'tablet3-ipad', name: 'iPad Moderno', file: 'tablet3/ipad.html', category: 'ipad', section: 'Transmisor', description: 'Versión modernizada con mejores accesos.', tag: 'New' },
+      { id: 'tablet3-obs', name: 'OBS Receptor V3', file: 'tablet3/obs.html', category: 'ipad', section: 'Receptor', description: 'Receptor actualizado para la versión moderna.', tag: 'OBS' },
+      { id: 'pptevent', name: 'PPT Event LAN', file: 'streventos/pptevent.html', category: 'events', section: 'LAN clean', description: 'Llamada PPT pensada para red local.', tag: 'LAN' },
+      { id: 'pptturn', name: 'PPT Hybrid TURN', file: 'streventos/pptturn.html', category: 'events', section: 'Híbrido', description: 'Versión con STUN/TURN y credenciales visibles.', tag: 'TURN' },
+      { id: 'avndi', name: 'NDI Delay Calc', file: 'avndi/index.html', category: 'tools', section: 'Calculadora', description: 'Convierte FPS a delay aproximado en ms.', tag: 'Calc' },
+      { id: 'retorno', name: 'Retorno Viewer', file: 'retorno/index.html', category: 'tools', section: 'Retorno', description: 'Visualización pasiva para retorno de sala.', tag: 'View' },
+      { id: 'retorno-pc', name: 'Retorno PC', file: 'retorno/pc.html', category: 'tools', section: 'Laptop', description: 'Versión para laptop a laptop en eventos.', tag: 'PC' },
+      { id: 'call-vdo', name: 'Meshcast Studio', file: 'call/vdo.html', category: 'docs', section: 'Estudio visual', description: 'Interfaz de estudio con estilo panel de publicación.', tag: 'UI' },
+      { id: 'baradero4', name: 'Baradero 4', file: 'baradero4.html', category: 'docs', section: 'Legacy', description: 'Variante estable con tally y otros fixes.', tag: 'Fix' },
+      { id: 'call3', name: 'Call 3', file: 'call3/index.html', category: 'docs', section: 'Legacy', description: 'Versión paralela al flujo de estudio.', tag: 'Fix' },
+      { id: 'video-index', name: 'Video Index', file: 'video/index.html', category: 'docs', section: 'Duplicado', description: 'Portal de video base con panel y overlays.', tag: 'Core' },
+      { id: 'readme-general', name: 'README General', file: 'README_GENERAL.md', category: 'docs', section: 'Docs', description: 'Visión general y arquitectura del proyecto.', tag: 'Doc' },
+      { id: 'readme-cred', name: 'Credenciales', file: 'README_CREDENCIALES.md', category: 'docs', section: 'Docs', description: 'Cómo cambiar brokers, TURN y PeerJS.', tag: 'Doc' },
+      { id: 'indice', name: 'Índice', file: 'INDICE.md', category: 'docs', section: 'Docs', description: 'Mapa de navegación de toda la documentación.', tag: 'Doc' },
+    ];
+
+    const docs = apps.filter(app => app.category === 'docs').concat([
+      { id: 'readme-video', name: 'Video Conferencia', file: 'README_VIDEO_CONFERENCIA.md', category: 'docs', section: 'Docs', description: 'Explicación de video multiusuario.', tag: 'Doc' },
+      { id: 'readme-ptt', name: 'PTT', file: 'README_PTT.md', category: 'docs', section: 'Docs', description: 'Guía para comunicación tipo walkie-talkie.', tag: 'Doc' },
+      { id: 'readme-split', name: 'Spliteo', file: 'README_SPLITEO.md', category: 'docs', section: 'Docs', description: 'Guía de grilla, QR y overlays.', tag: 'Doc' },
+      { id: 'readme-ipad', name: 'iPad', file: 'README_CAPTURA_IPAD.md', category: 'docs', section: 'Docs', description: 'Guía de captura y OBS.', tag: 'Doc' },
+      { id: 'quick-cred', name: 'Quick Credenciales', file: 'QUICK_START_CREDENCIALES.md', category: 'docs', section: 'Docs', description: 'Cambio rápido de credenciales.', tag: 'Doc' },
+      { id: 'mapa-cred', name: 'Mapa Credenciales', file: 'MAPA_CREDENCIALES.md', category: 'docs', section: 'Docs', description: 'Ubicación exacta de valores sensibles.', tag: 'Doc' },
+      { id: 'resumen', name: 'Resumen Ejecutivo', file: 'RESUMEN_EJECUTIVO.md', category: 'docs', section: 'Docs', description: 'Resumen de la colección completa.', tag: 'Doc' },
+    ]);
+
+    const categoryLabels = new Map(categories.map(cat => [cat.id, cat]));
+    const state = {
+      activeCategory: 'all',
+      activeAppId: null,
+      search: '',
+      configOpen: false,
+      navOpen: false,
+    };
+
+    const elements = {
+      nav: document.getElementById('categoryNav'),
+      chips: document.getElementById('sectionChips'),
+      cards: document.getElementById('cardsList'),
+      viewerTitle: document.getElementById('viewerTitle'),
+      viewerPath: document.getElementById('viewerPath'),
+      frame: document.getElementById('viewerFrame'),
+      openNewTab: document.getElementById('openNewTabBtn'),
+      launchSelected: document.getElementById('launchSelectedBtn'),
+      copySelected: document.getElementById('copySelectedBtn'),
+      reloadBtn: document.getElementById('reloadBtn'),
+      searchInput: document.getElementById('searchInput'),
+      configPanel: document.getElementById('configPanel'),
+      openConfigBtn: document.getElementById('openConfigBtn'),
+      closeConfigBtn: document.getElementById('closeConfigBtn'),
+      mobileToggle: document.getElementById('mobileToggle'),
+      statApps: document.getElementById('statApps'),
+      statGroups: document.getElementById('statGroups'),
+      statDocs: document.getElementById('statDocs'),
+    };
+
+    function normalize(text) {
+      return String(text || '').toLowerCase();
+    }
+
+    function matchesSearch(item) {
+      const query = normalize(state.search).trim();
+      if (!query) return true;
+      return [item.name, item.file, item.section, item.description, item.category, item.tag]
+        .some(value => normalize(value).includes(query));
+    }
+
+    function getVisibleApps() {
+      return apps.filter(app => (state.activeCategory === 'all' || app.category === state.activeCategory) && matchesSearch(app));
+    }
+
+    function getActiveApp() {
+      return apps.find(app => app.id === state.activeAppId) || apps[0];
+    }
+
+    function setActiveApp(app) {
+      state.activeAppId = app.id;
+      const url = app.file;
+      elements.viewerTitle.textContent = app.name;
+      elements.viewerPath.textContent = `${app.section} · ${app.file}`;
+      elements.frame.src = url;
+      elements.openNewTab.href = url;
+      renderCards();
+      updateSelectionUrl();
+    }
+
+    function showLanding() {
+      elements.viewerTitle.textContent = 'Portal central integrado';
+      elements.viewerPath.textContent = 'Selecciona una herramienta para cargarla aquí.';
+      elements.frame.srcdoc = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              margin: 0;
+              min-height: 100vh;
+              display: grid;
+              place-items: center;
+              font-family: Inter, Arial, sans-serif;
+              color: #edf4ff;
+              background:
+                radial-gradient(circle at top, rgba(56,189,248,0.18), transparent 32%),
+                linear-gradient(180deg, #07111f 0%, #02060c 100%);
+            }
+            .box {
+              width: min(760px, calc(100vw - 48px));
+              border: 1px solid rgba(255,255,255,0.08);
+              border-radius: 28px;
+              background: rgba(8, 16, 29, 0.72);
+              padding: 34px;
+              box-shadow: 0 26px 80px rgba(0,0,0,0.45);
+              backdrop-filter: blur(18px);
+            }
+            .tag {
+              display: inline-block;
+              padding: 7px 12px;
+              border-radius: 999px;
+              font-size: 12px;
+              letter-spacing: 0.08em;
+              text-transform: uppercase;
+              color: #9fe9ff;
+              background: rgba(56,189,248,0.12);
+              border: 1px solid rgba(56,189,248,0.18);
+            }
+            h1 {
+              margin: 18px 0 12px;
+              font-family: 'Space Grotesk', Arial, sans-serif;
+              font-size: clamp(34px, 5vw, 56px);
+              line-height: 0.95;
+              letter-spacing: -0.05em;
+            }
+            p {
+              margin: 0 0 18px;
+              color: #a9bedb;
+              line-height: 1.6;
+              font-size: 15px;
+            }
+            .grid {
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 12px;
+              margin-top: 24px;
+            }
+            .card {
+              padding: 14px;
+              border-radius: 18px;
+              background: rgba(255,255,255,0.03);
+              border: 1px solid rgba(255,255,255,0.06);
+            }
+            .card strong { display:block; margin-bottom: 6px; font-size: 14px; }
+            .card span { color: #a9bedb; font-size: 12px; line-height: 1.45; }
+          </style>
+        </head>
+        <body>
+          <div class="box">
+            <div class="tag">Stream-Tropa Central</div>
+            <h1>Una sola web para operar, revisar y documentar todo.</h1>
+            <p>
+              Usa el panel izquierdo para elegir una herramienta y abrirla dentro del visor.
+              También puedes abrir las guías, copiar enlaces y mantener la configuración común en un solo lugar.
+            </p>
+            <div class="grid">
+              <div class="card"><strong>Video</strong><span>Conferencias, director, guest y OBS.</span></div>
+              <div class="card"><strong>PTT</strong><span>Comunicación tipo walkie-talkie para equipos.</span></div>
+              <div class="card"><strong>Overlays</strong><span>QR, cronómetro, noticias y tarjetas.</span></div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      elements.openNewTab.href = '#';
+      elements.launchSelected.dataset.target = '';
+      elements.copySelected.dataset.target = '';
+    }
+
+    function renderNav() {
+      elements.nav.innerHTML = categories.map(cat => `
+        <button class="${cat.id === state.activeCategory ? 'active' : ''}" data-category="${cat.id}">
+          <div class="topline">
+            <div class="title">${cat.name}</div>
+            <div class="count">${cat.count}</div>
+          </div>
+          <p class="desc">${cat.description}</p>
+        </button>
+      `).join('');
+    }
+
+    function renderChips() {
+      const chips = [
+        ['all', 'Todo'],
+        ['video', 'Video'],
+        ['ptt', 'PTT'],
+        ['split', 'Spliteo'],
+        ['ipad', 'iPad'],
+        ['events', 'Eventos'],
+        ['tools', 'Herramientas'],
+        ['docs', 'Docs'],
+      ];
+
+      elements.chips.innerHTML = chips.map(([id, label]) => `
+        <button class="chip ${id === state.activeCategory ? 'active' : ''}" data-chip="${id}">${label}</button>
+      `).join('');
+    }
+
+    function renderCards() {
+      const visibleApps = getVisibleApps();
+      if (!visibleApps.length) {
+        elements.cards.innerHTML = `<div class="empty">No hay resultados para esa búsqueda o categoría.</div>`;
+        return;
+      }
+
+      elements.cards.innerHTML = visibleApps.map(app => `
+        <article class="card ${app.id === state.activeAppId ? 'selected' : ''}">
+          <div class="row">
+            <div>
+              <h4>${app.name}</h4>
+              <p>${app.description}</p>
+            </div>
+            <span class="meta">${app.tag}</span>
+          </div>
+          <div class="meta">${categoryLabels.get(app.category)?.name || app.category} · ${app.section}</div>
+          <div class="actions">
+            <button data-open="${app.id}">Abrir</button>
+            <a href="${app.file}" target="_blank" rel="noreferrer">Nueva pestaña</a>
+            <button data-copy-url="${app.file}">Copiar URL</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function updateStats() {
+      elements.statApps.textContent = String(apps.filter(app => !app.file.endsWith('.md')).length);
+      elements.statGroups.textContent = String(categories.length - 1);
+      elements.statDocs.textContent = String(docs.length);
+    }
+
+    function updateSelectionUrl() {
+      const app = getActiveApp();
+      const params = new URLSearchParams();
+      params.set('app', app.id);
+      params.set('file', app.file);
+      elements.launchSelected.dataset.target = app.file;
+      elements.copySelected.dataset.target = app.file;
+      const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, '', url);
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        const temp = document.createElement('textarea');
+        temp.value = text;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        temp.remove();
+      }
+    }
+
+    function syncFromQuery() {
+      const params = new URLSearchParams(window.location.search);
+      const appId = params.get('app');
+      const category = params.get('section');
+      if (category && categoryLabels.has(category)) {
+        state.activeCategory = category;
+      }
+      const initialApp = apps.find(app => app.id === appId) || apps.find(app => app.category === state.activeCategory) || apps[0];
+      if (initialApp) state.activeAppId = initialApp.id;
+    }
+
+    function bindEvents() {
+      elements.nav.addEventListener('click', event => {
+        const button = event.target.closest('button[data-category]');
+        if (!button) return;
+        state.activeCategory = button.dataset.category;
+        renderNav();
+        renderChips();
+        renderCards();
+      });
+
+      elements.chips.addEventListener('click', event => {
+        const button = event.target.closest('button[data-chip]');
+        if (!button) return;
+        state.activeCategory = button.dataset.chip;
+        renderNav();
+        renderChips();
+        renderCards();
+      });
+
+      elements.cards.addEventListener('click', async event => {
+        const openBtn = event.target.closest('button[data-open]');
+        if (openBtn) {
+          const app = apps.find(item => item.id === openBtn.dataset.open);
+          if (app) setActiveApp(app);
+          return;
+        }
+
+        const copyBtn = event.target.closest('button[data-copy-url]');
+        if (copyBtn) {
+          await copyText(copyBtn.dataset.copyUrl);
+          copyBtn.textContent = 'Copiado';
+          setTimeout(() => { copyBtn.textContent = 'Copiar URL'; }, 900);
+        }
+      });
+
+      elements.searchInput.addEventListener('input', event => {
+        state.search = event.target.value;
+        renderCards();
+      });
+
+      elements.launchSelected.addEventListener('click', () => {
+        const url = elements.launchSelected.dataset.target || getActiveApp().file;
+        setActiveApp(apps.find(app => app.file === url) || getActiveApp());
+      });
+
+      elements.copySelected.addEventListener('click', async () => {
+        const url = elements.copySelected.dataset.target || getActiveApp().file;
+        await copyText(url);
+        elements.copySelected.textContent = 'Copiado';
+        setTimeout(() => { elements.copySelected.textContent = 'Copiar URL activa'; }, 900);
+      });
+
+      elements.reloadBtn.addEventListener('click', () => {
+        const app = getActiveApp();
+        elements.frame.src = app.file;
+      });
+
+      elements.openConfigBtn.addEventListener('click', () => {
+        elements.configPanel.classList.add('open');
+      });
+
+      elements.closeConfigBtn.addEventListener('click', () => {
+        elements.configPanel.classList.remove('open');
+      });
+
+      elements.mobileToggle.addEventListener('click', () => {
+        document.body.classList.toggle('nav-open');
+      });
+
+      document.addEventListener('click', async event => {
+        const button = event.target.closest('[data-copy]');
+        if (!button) return;
+        await copyText(button.dataset.copy);
+        const original = button.textContent;
+        button.textContent = 'Copiado';
+        setTimeout(() => { button.textContent = original; }, 900);
+      });
+
+      window.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          elements.configPanel.classList.remove('open');
+          document.body.classList.remove('nav-open');
+        }
+      });
+    }
+
+    function init() {
+      syncFromQuery();
+      updateStats();
+      renderNav();
+      renderChips();
+      renderCards();
+      bindEvents();
+      showLanding();
+
+      const queryApp = new URLSearchParams(window.location.search).get('app');
+      if (queryApp) {
+        const target = apps.find(app => app.id === queryApp);
+        if (target) setActiveApp(target);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -384,6 +384,15 @@ function getAudioConstraints() {
 }
 
 function startBroadcast() {
+    if (!window.isSecureContext) {
+        alert('Streamcall Power necesita HTTPS o localhost para usar cámara y micrófono. Si lo abrís como archivo local o en una URL no segura, el navegador lo bloquea.');
+        return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Este navegador no expone acceso a cámara/micrófono en esta página. Probá Chrome, Edge o Firefox actualizados.');
+        return;
+    }
+
     isMusicMode = document.getElementById('musicMode').checked;
     const name = myRole === 'operator' 
         ? document.getElementById('userName').value 
@@ -442,7 +451,7 @@ function startBroadcast() {
         initPeer(name);
         
     }).catch(err => {
-        alert('Error cámara/micrófono: ' + err.message);
+        alert('Error cámara/micrófono: ' + err.name + '\n' + err.message);
     });
 }
 
